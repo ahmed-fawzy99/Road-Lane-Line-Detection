@@ -1,4 +1,5 @@
 import matplotlib.pylab as plt
+import sys
 import cv2
 import numpy as np
 
@@ -140,27 +141,38 @@ def frame_process(img):
     lanes = cv2.addWeighted(copy, 1, black_lines, 1, 1)
     return lanes
 
+# python3 -mode path
 
-# img = cv2.imread('test_images/test6.jpg')
-# img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-# plt.imshow(frame_process(img))
-# plt.show()
+path = sys.argv[2]
 
-video = cv2.VideoCapture('project_video.mp4')
-frame_width = int(video.get(3))
-frame_height = int(video.get(4))
+#  user_input = input("Type 'i' for Image mode, 'v' for Video mode:\n> ").lower()
+if sys.argv[1][-1] == 'i':
+    #  path = input("Enter the path for the image to process (example: test_images/test6.jpg):\n> ")
+    img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    cv2.imshow('Result', img)
+    plt.imshow(frame_process(img))
+    plt.show()
 
-#  result = cv2.VideoWriter('RESULT.avi',cv2.VideoWriter_fourcc(*'MJPG'), 25, (frame_width, frame_height)) #  Already exported it once
+elif sys.argv[1][-1] == "v":
+    #path = input("Enter the path for the video to process (example: project_video.mp4):\n> ")
+    video = cv2.VideoCapture(path)
+    frame_width = int(video.get(3))
+    frame_height = int(video.get(4))
+    save_name = f"Result_{path}.mp4"
+    result = cv2.VideoWriter(save_name,cv2.VideoWriter_fourcc(*'MP4V'), 25, (frame_width, frame_height))
 
-while video.isOpened():
-    ret, frame = video.read()
-    if ret == True:
-        frame = frame_process(frame)
-        #  result.write(frame)  #  Already exported it once
-        cv2.imshow('Frame', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+    while video.isOpened():
+        ret, frame = video.read()
+        if ret:
+            frame = frame_process(frame)
+            result.write(frame)
+            cv2.imshow('Frame', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        else:
             break
-    else:
-        break
-video.release()
-cv2.destroyAllWindows()
+    video.release()
+    cv2.destroyAllWindows()
+else:
+    print("Incorrect mode entered. Please try again.")
